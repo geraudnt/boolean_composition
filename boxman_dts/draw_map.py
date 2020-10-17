@@ -13,7 +13,7 @@ if __name__ == '__main__':
                        'crate_blue': (1, 1),
                        'crate_purple': (8, 1),
                        'circle_blue': (1, 8)}
-    env = WarpFrame(CollectEnv(start_positions=start_positions, changePlayerPos=False,
+    env = WarpFrame(CollectEnv(start_positions=start_positions,
                                goal_condition=lambda x: x.colour == 'purple' or x.colour == 'blue'))
 
     env.reset()
