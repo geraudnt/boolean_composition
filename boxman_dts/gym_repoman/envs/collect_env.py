@@ -276,7 +276,7 @@ class CollectEnv(gym.Env):
                 collected[0].reset((0,0))
                 self.player.reset((0,0))             
                 collected[0].image = pygame.transform.scale(collected[0].high_res, self._SCREEN_SIZE)
-                self.player.image = pygame.transform.scale(self.player.high_res, (0,0))
+                self.player.image = pygame.transform.scale(self.player.high_res, self._SCREEN_SIZE)
                 self.render_group.add(collected)
                 self.render_group.add(self.player)
                 return self._draw_screen(self._surface), reward, done, {'collected': self.collected}

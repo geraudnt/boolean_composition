@@ -92,11 +92,11 @@ if __name__ == '__main__':
                save_all=True, append_images=trajectories[1:], optimize=False, duration=250, loop=0)
     
     save_trajectories=False
-    # exp(name='blue', save_trajectories=save_trajectories)
-    # exp(name='purple', save_trajectories=save_trajectories)
-    # exp(name='square', save_trajectories=save_trajectories)
-    # exp(name='or', save_trajectories=save_trajectories)
-    # exp(name='and', save_trajectories=save_trajectories)
-    # exp(name='xor', save_trajectories=save_trajectories)
-    # exp(name='not', save_trajectories=True)
+    exp(name='blue', save_trajectories=save_trajectories)
+    exp(name='purple', save_trajectories=save_trajectories)
+    exp(name='square', save_trajectories=save_trajectories)
+    exp(name='or', save_trajectories=save_trajectories)
+    exp(name='and', save_trajectories=save_trajectories)
+    exp(name='xor', save_trajectories=save_trajectories)
+    exp(name='not', save_trajectories=True)
             

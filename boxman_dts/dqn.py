@@ -140,7 +140,7 @@ class DQN(nn.Module):
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
 
-        x = F.relu(self.linear1(x.view(x.size(0), -1)))
+        x = F.relu(self.linear1(x.reshape(x.size(0), -1)))
         x = self.head(x)
         return x.squeeze()
 
@@ -272,7 +272,7 @@ class Agent(object):
                 x = torch.cat((obs,goal),dim=3)
                 values.append(self.q_func(Variable(x, volatile=True)).squeeze(0))
             values = torch.stack(values,1).t()
-            action = values.data.max(0)[0].max(0)[1].view(1, 1) #self.q_func(Variable(obs, volatile=True)).data.max(1)[1].view(1, 1)
+            action = values.data.max(0)[0].max(0)[1].reshape(1, 1) #self.q_func(Variable(obs, volatile=True)).data.max(1)[1].reshape(1, 1)
             # Use volatile = True if variable is only used in inference mode, i.e. don’t save the history
             return action
         else:

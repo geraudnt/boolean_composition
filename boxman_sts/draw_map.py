@@ -1,6 +1,6 @@
 from gym_repoman.envs import CollectEnv
 from wrappers import WarpFrame
-import scipy.misc
+import imageio
 
 
 if __name__ == '__main__':
@@ -13,11 +13,11 @@ if __name__ == '__main__':
                        'crate_blue': (1, 1),
                        'crate_purple': (8, 1),
                        'circle_blue': (1, 8)}
-    env = WarpFrame(CollectEnv(start_positions=start_positions,
-                               task_condition=lambda x: x.colour == 'purple' or x.colour == 'blue'))
+    env = WarpFrame(CollectEnv(start_positions=start_positions, changePlayerPos=False,
+                               goal_condition=lambda x: x.colour == 'purple' or x.colour == 'blue'))
 
     env.reset()
     image = env.render()
 
-    scipy.misc.imsave('map.png', image)
+    imageio.imwrite('map.png', image)
 
