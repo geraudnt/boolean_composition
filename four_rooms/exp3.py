@@ -5,9 +5,6 @@ from GridWorld import GridWorld
 from library import *
 
 
-
-env = GridWorld()
-maxiter=500
 T_states=[(3,3),(3,9),(9,3),(9,9)]
 T_states = [[pos,pos] for pos in T_states]
 
@@ -17,7 +14,9 @@ Tasks = [[],[(3,3),(3,9),(9,3),(9,9)],[(3,3)],[(3,9)],[(9,3)],[(9,9)],[(3,3),(3,
 #Sparse rewards, Same terminal states
 types = [(True,True),(True,False),(False,True),(False,False)] 
 
+maxiter=500
 num_runs = 100000
+
 
 def evaluate(goals,EQ):
     env = GridWorld(goals=goals, T_states=T_states)
@@ -35,9 +34,7 @@ def evaluate(goals,EQ):
     return G
 
 for t in range(len(types)):
-    bounds = []
-    bases = []
-    composed = []
+    print("type: ",t)
     
     # Learning universal bounds (min and max tasks)
     env = GridWorld(goals=T_states, dense_rewards = not types[t][0])
@@ -72,15 +69,4 @@ for t in range(len(types)):
             data[i,j] = evaluate(goals,composed[j])    
     data1 = dd.io.save('exps_data/exp3_returns_'+str(t)+'.h5', data)
     
-    print("type: ",t)
-
-
-
-"""
-def compose(bases,exp):
-    EQ = bases[exp[0]]
-    for i in range(1, len(exp), 2):
-        if exp[i] == 'NOT':
-            EQ = NOT
-"""
 

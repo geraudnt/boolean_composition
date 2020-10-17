@@ -35,14 +35,14 @@ class GridWorld(gym.Env):
           "1 0 0 0 0 0 1 0 0 0 0 0 1\n" \
           "1 1 1 1 1 1 1 1 1 1 1 1 1"
 
-    def __init__(self, MAP=MAP, dense_rewards = False, rmax=2, rmin=-0.1, goal_reward=2, step_reward=-0.1, goals=None, T_states=None, start_position=None):
+    def __init__(self, MAP=MAP, dense_rewards = False, goal_reward=2, step_reward=-0.1, goals=None, T_states=None, start_position=None, slip_prob=0):
 
         self.n = None
         self.m = None
 
         self.grid = None
         self.hallwayStates = None
-        self.possibleStates = []
+        self.possiblePositions = []
         self.walls = []
         
         self.MAP = MAP
@@ -50,6 +50,8 @@ class GridWorld(gym.Env):
         self.diameter = (self.n+self.m)-4
 
         self.done = False
+        
+        self.slip_prob = slip_prob
         
         self.start_position = start_position
         self.position = self.start_position if start_position else (1, 1)
@@ -68,15 +70,15 @@ class GridWorld(gym.Env):
         # Rewards
         self.goal_reward = goal_reward
         self.step_reward = step_reward
-        self.rmax = rmax
-        self.rmin = rmin
+        self.rmax = 2
+        self.rmin = -0.1
         
         self.dense_rewards = dense_rewards
         if self.dense_rewards:
             self.rmin = self.rmin*10
 
         # Gym spaces for observation and action space
-        self.observation_space = spaces.Discrete(len(self.possibleStates))
+        self.observation_space = spaces.Discrete(len(self.possiblePositions))
         self.action_space = spaces.Discrete(5)
         
 
@@ -84,9 +86,28 @@ class GridWorld(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         np.random.rand(seed)
         return [seed]
+    
+    def pertube_action(self,action):      
+        if action != STAY:
+            a = 1-self.slip_prob
+            b = self.slip_prob/(self.action_space.n-2)
+            if action == UP:
+                probs = [a,b,b,b,0]
+            elif action == DOWN:
+                probs = [b,b,a,b,0]
+            elif action == RIGHT:
+                probs = [b,a,b,b,0]
+            elif action == LEFT:
+                probs = [b,b,b,a,0]
+            # else:
+            #     probs = [b,b,b,b,a]
+            action = np.random.choice(np.arange(len(probs)), p=probs)       
+        return action
 
     def step(self, action):
         assert self.action_space.contains(action)
+        
+        action = self.pertube_action(action)
         
         g = [None,None] # #virtual state 
         if self.state in self.T_states:
@@ -132,13 +153,25 @@ class GridWorld(gym.Env):
         else:
             reward += self.step_reward
         
-        return reward
+        return reward        
+    
+    def env_R(self):
+        R = defaultdict(lambda: np.zeros(self.action_space.n))
+        for position in self.possiblePositions: 
+            state = [None,position]
+            for action in range(self.action_space.n):
+                R[str(state)][action] = self._get_reward(state,action)
+            state = [position,position]
+            if state in self.T_states:
+                for action in range(self.action_space.n):
+                    R[str(state)][action] = self._get_reward(state,action) 
+        return R
 
     def reset(self):
         self.done = False
         if not self.start_position:
-            idx = np.random.randint(len(self.possibleStates))
-            self.position = self.possibleStates[idx]  # self.start_state_coord
+            idx = np.random.randint(len(self.possiblePositions))
+            self.position = self.possiblePositions[idx]  # self.start_state_coord
         else:
             self.position = self.start_position
         self.state = [None, self.position]
@@ -269,7 +302,7 @@ class GridWorld(gym.Env):
                     self.walls.append((i, j))
                 # possible states
                 else:
-                    self.possibleStates.append((i, j))
+                    self.possiblePositions.append((i, j))
             self.grid.append(rowArray)
         self.m = i + 1
 
@@ -277,7 +310,7 @@ class GridWorld(gym.Env):
 
     def _find_hallWays(self):
         self.hallwayStates = []
-        for x, y in self.possibleStates:
+        for x, y in self.possiblePositions:
             if ((self.grid[x - 1][y] == 1) and (self.grid[x + 1][y] == 1)) or \
                     ((self.grid[x][y - 1] == 1) and (self.grid[x][y + 1] == 1)):
                 self.hallwayStates.append((x, y))

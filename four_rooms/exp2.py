@@ -62,7 +62,7 @@ for i in range(num_runs):
     for j in idxs:
         print("goals: ",j)
         goals = [[pos,pos] for pos in BTasksQ[j]]
-        env = GridWorld(goals=goals, T_states=T_states, rmax=1, rmin=-0.01, goal_reward=1, step_reward=-0.01)
+        env = GridWorld(goals=goals, goal_reward=1, step_reward=-0.01, T_states=T_states)
         _,stats = Q_learning(env, Q_optimal=Qs[j])
         dataQ[i,j] = stats["T"]
 idxs=np.arange(len(BTasksEQ))
@@ -72,7 +72,7 @@ for i in range(num_runs):
     for j in idxs:
         print("goals: ",j)
         goals = [[pos,pos] for pos in BTasksEQ[j]]
-        env = GridWorld(goals=goals, T_states=T_states, rmax=1, rmin=-0.01, goal_reward=1, step_reward=-0.01)
+        env = GridWorld(goals=goals, goal_reward=1, step_reward=-0.01, T_states=T_states)
         _,stats = Goal_Oriented_Q_learning(env, Q_optimal=EQs[j])
         dataEQ[i,j] = stats["T"]
 

@@ -9,7 +9,9 @@ from ast import literal_eval
 def Q_equal(Q1,Q2,epsilon=1e-5):    
     for state in Q1:
         for action in range(len(Q1[state])): 
-            if abs(Q1[state][action]-Q2[state][action])>epsilon:
+            v1 = Q1[state][action]
+            v2 = Q2[state][action]
+            if abs(v1-v2)>epsilon:
                 return False
     return True
 
@@ -17,7 +19,9 @@ def EQ_equal(EQ1,EQ2,epsilon=1e-5):
     for state in EQ1:
         for goal in EQ1[state]:
             for action in range(len(EQ1[state][goal])): 
-                if abs(EQ1[state][goal][action]-EQ2[state][goal][action])>epsilon:
+                v1 = EQ1[state][goal][action]
+                v2 = EQ2[state][goal][action]
+                if not (abs(v1-v2)<epsilon or (v1<-30 and v2<-30)):
                     return False
     return True
 #########################################################################################
@@ -54,10 +58,14 @@ def epsilon_greedy_generalised_policy_improvement(env, Q, epsilon = 1):
     policy_improved -- Improved policy
     """
     
-    def policy_improved(state, epsilon = epsilon):
+    def policy_improved(state, goal = None, epsilon = epsilon):
         probs = np.ones(env.action_space.n, dtype=float)*(epsilon/env.action_space.n)
-        values = [Q[state][goal] for goal in Q[state].keys()]
-        best_action = np.random.randint(env.action_space.n) if len(values)==0 else np.argmax(np.max(values,axis=0))
+        values = [Q[state][goal]] if goal else [Q[state][goal] for goal in Q[state].keys()]
+        if len(values)==0:
+            best_action = np.random.randint(env.action_space.n)
+        else:
+            values = np.max(values,axis=0)
+            best_action = np.random.choice(np.flatnonzero(values == values.max()))
         probs[best_action] += 1.0 - epsilon
         return probs
 
@@ -179,15 +187,21 @@ def EQ_NP(EQ):
     for state in EQ:
         for goal in EQ[state]:
                 P[state][goal] = np.argmax(EQ[state][goal])
+                #v = EQ[state][goal]
+                #P[state][goal] = np.random.choice(np.flatnonzero(v == v.max()))
     return P
 def EQ_P(EQ, goal=None):
     P = defaultdict(lambda: 0)
     for state in EQ:
         if goal:
             P[state] = np.argmax(EQ[state][goal])
+            #v = EQ[state][goal]
+            #P[state] = np.random.choice(np.flatnonzero(v == v.max()))
         else:
             Vs = [EQ[state][goal] for goal in EQ[state].keys()]
             P[state] = np.argmax(np.max(Vs,axis=0))
+            #v = np.max(Vs,axis=0)
+            #P[state] = np.random.choice(np.flatnonzero(v == v.max()))
     return P
 def Q_P(Q):
     P = defaultdict(lambda: 0)
@@ -234,14 +248,6 @@ def EQ_Q(EQ, goal=None):
             Vs = [EQ[state][goal] for goal in EQ[state].keys()]
             Q[state] = np.max(Vs,axis=0)
     return Q
-
-def env_R(env, states):
-    R = defaultdict(lambda: np.zeros(env.action_space.n))
-    for state in states: 
-        for action in range(env.action_space.n):
-            R[state][action] = env._get_reward(literal_eval(state),action)
-                
-    return R
 
 #########################################################################################
 def MAX(Q1, Q2):
